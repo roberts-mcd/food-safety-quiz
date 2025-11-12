@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roberts Management Food Safety Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="app"></div>
+    
+    <script>
+        // ═══════════════════════════════════════════════════════════════════
+        // ⚠️ PASTE YOUR GOOGLE SCRIPT URL BELOW - REPLACE THE TEXT BETWEEN THE QUOTES
+        // ═══════════════════════════════════════════════════════════════════
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxB99sgu-pWt0H_-GOVyx94RHSnb8EpohA2Yb2r1kxtS590glkrhpFrl18Vo4WOg1CeQ/exec';
+        // ═══════════════════════════════════════════════════════════════════
+        
+        const LOCATIONS = ["Olympia", "Peters", "Duquesne", "Waterfront"];
+        
+        const questions = [
+            {id:1,question:"What is the minimum internal temperature for FROZEN 10:1 beef patties after cooking?",options:["145°F","150°F","155°F","165°F"],correct:2,category:"CRITICAL - Cooking Temps",ref:"FS2",critical:true,explanation:"FROZEN 10:1 beef patties MUST be cooked to at or above 155°F. This is a CRITICAL question - if patties are below 155°F during inspection, you automatically fail."},
+            {id:1.5,question:"What is the minimum internal temperature for FRESH 4:1 beef patties after cooking?",options:["155°F","165°F","175°F","180°F"],correct:2,category:"CRITICAL - Cooking Temps",ref:"FS2-Fresh",critical:true,explanation:"FRESH 4:1 beef patties MUST be cooked to at or above 175°F. This is a CRITICAL question - if patties are below 175°F during inspection, you automatically fail."},
+            {id:2,question:"What is the minimum internal temperature for raw chicken products after cooking?",options:["155°F","160°F","165°F","170°F"],correct:2,category:"CRITICAL - Cooking Temps",ref:"FS3",critical:true,explanation:"Raw chicken products MUST be cooked to at or above 165°F. This is a CRITICAL question - missing this means automatic inspection failure."},
+            {id:3,question:"What is the minimum internal temperature for Filet-O-Fish portions after cooking?",options:["145°F","150°F","155°F","165°F"],correct:2,category:"CRITICAL - Cooking Temps",ref:"FS4",critical:true,explanation:"Filet-O-Fish MUST be cooked to at or above 155°F. This is a CRITICAL question that causes automatic failure if missed."},
+            {id:4,question:"What is the minimum internal temperature for breakfast sausage (raw pork) and breakfast steak?",options:["145°F","155°F","165°F","175°F"],correct:1,category:"CRITICAL - Cooking Temps",ref:"FS5",critical:true,explanation:"Breakfast sausage and steak MUST be at or above 155°F. CRITICAL question - automatic failure if incorrect."},
+            {id:5,question:"What must be true about cooked McMuffin raw round eggs?",options:["Yolks are runny and at 145°F","Yolks are gelled (not runny) and at 155°F+","Yolks are gelled and at 145°F","Any temperature is acceptable"],correct:1,category:"CRITICAL - Cooking Temps",ref:"FS6",critical:true,explanation:"McMuffin round eggs MUST have gelled (not runny) yolks AND be at or above 155°F. CRITICAL - this is automatic failure."},
+            {id:6,question:"The on-duty manager must be able to demonstrate what regarding the Food Safety Daily Checklist?",options:["Just know where it's located","How to complete it and take corrective action","How to complete it only","Where to file it"],correct:1,category:"CRITICAL - Management",ref:"FS7",critical:true,explanation:"Manager MUST demonstrate proper training on completing the checklist AND ability to take corrective action. CRITICAL failure point."},
+            {id:7,question:"What indicates pest infestation that would cause automatic inspection failure?",options:["Seeing one fly","Signs of active pest infestation in restaurant, corral, or within 10 feet of building","Old mouse droppings outside","Ants in the parking lot"],correct:1,category:"CRITICAL - Pest Control",ref:"FS1",critical:true,explanation:"ANY signs of active pest infestation in the restaurant, adjoining corral, or within 10 feet of building is CRITICAL automatic failure."},
+            {id:8,question:"All TCS refrigerated products must be:",options:["Used within 7 days","In code (within primary shelf life)","Labeled with any date","Stored at any cold temp"],correct:1,category:"Time-Temp Control - 5 Points",ref:"FS8",critical:false,explanation:"ALL TCS refrigerated products MUST be in code (within primary shelf life). Worth 5 points."},
+            {id:9,question:"What must be available at ALL handwashing sinks?",options:["Just soap","Just warm water","Running warm water and required supplies (soap, towels, signage)","Cold water and soap"],correct:2,category:"Hygiene - 5 Points",ref:"FS9",critical:false,explanation:"All handwashing sinks MUST have running warm water, soap, paper towels, and proper signage. Worth 5 points."},
+            {id:10,question:"What system must be in place for employee handwashing?",options:["Employees wash when they want","Hourly and activity-based handwashing by ALL employees","Once per shift minimum","Only when visibly dirty"],correct:1,category:"Hygiene - 5 Points",ref:"FS10",critical:false,explanation:"A system MUST be in place for hourly AND activity-based handwashing. Worth 5 points."},
+            {id:11,question:"What color gloves MUST be used when handling raw meat or poultry products at the grill?",options:["Any color is fine","Blue or colored disposable gloves","Clear gloves only","No gloves needed"],correct:1,category:"Hygiene - 5 Points",ref:"FS18",critical:false,explanation:"Blue or colored disposable gloves MUST be used to prevent cross-contamination. Worth 5 points."},
+            {id:12,question:"Walk-in freezers must keep products at what temperature?",options:["10°F or below","5°F or below","0°F or below","Any frozen temp"],correct:2,category:"Temperature Control - 5 Points",ref:"FS23",critical:false,explanation:"Walk-in freezers MUST maintain 0°F or below. Worth 5 points."},
+            {id:13,question:"Walk-in refrigerators must keep products at what temperature?",options:["45°F or below","42°F or below","40°F or below","38°F or below"],correct:2,category:"Temperature Control - 5 Points",ref:"FS24",critical:false,explanation:"Walk-in refrigerators MUST maintain at or below 40°F. Worth 5 points."},
+            {id:14,question:"What must be true about the pyrometer (thermometer)?",options:["Just needs to work","Clean, calibrated, working correctly, and used correctly","Working and stored properly","Any functioning thermometer"],correct:1,category:"Equipment - 5 Points",ref:"FS27",critical:false,explanation:"Pyrometer and probes MUST be clean, calibrated, working correctly, AND used correctly. Worth 5 points."},
+            {id:15,question:"All food, packaging, equipment, and chemicals must be from:",options:["Any reputable supplier","Approved sources","The cheapest supplier","Local suppliers"],correct:1,category:"Sourcing - 5 Points",ref:"FS28",critical:false,explanation:"ALL food, packaging, equipment, and cleaning chemicals MUST be from approved sources. Worth 5 points."},
+            {id:16,question:"When can an employee with vomiting or diarrhea work?",options:["After 24 hours","After symptoms stop","Managers must know when employee can return per regulations","Whenever they feel better"],correct:2,category:"Employee Health - 5 Points",ref:"FS29",critical:false,explanation:"Managers MUST understand illness symptoms and when employees can return to work. Worth 5 points."},
+            {id:17,question:"How many days of Daily Food Safety Checklists must be available?",options:["30 days","45 days","60 days","90 days"],correct:2,category:"Documentation - 5 Points",ref:"FS31",critical:false,explanation:"Last 60 days of DFSC must be available. Worth 5 points."},
+            {id:18,question:"How often must UHC trays and utensils be washed, rinsed, and sanitized?",options:["Every 2 hours","Every 4 hours","Every 6 hours","Once per shift"],correct:1,category:"Sanitization - 3 Points",ref:"FS13",critical:false,explanation:"Must be sanitized at least every 4 hours. Worth 3 points."},
+            {id:19,question:"What is the minimum wash water temperature for the back sink?",options:["100°F","110°F","120°F","130°F"],correct:1,category:"Sanitization - 3 Points",ref:"FS13",critical:false,explanation:"Back sink wash water MUST be 110°F or higher. Worth 3 points."},
+            {id:20,question:"Leftover heated foods and expired UHC products must be:",options:["Saved for later","Discarded","Re-heated","Cooled and stored"],correct:1,category:"Time-Temp Control - 3 Points",ref:"FS26",critical:false,explanation:"ALL leftover heated foods MUST be discarded. Worth 3 points."}
+        ];
+        
+        let state = {
+            screen: 'login',
+            user: null,
+            quiz: [],
+            current: 0,
+            selected: null,
+            showExplain: false,
+            score: 0,
+            answers: [],
+            leaderboard: [],
+            name: '',
+            location: ''
+        };
+        
+        function render() {
+            const app = document.getElementById('app');
+            app.innerHTML = state.screen === 'login' ? renderLogin() :
+                            state.screen === 'home' ? renderHome() :
+                            state.screen === 'quiz' ? renderQuiz() :
+                            state.screen === 'results' ? renderResults() :
+                            renderLeaderboard();
+        }
+        
+        function renderLogin() {
+            return `
+                <div class="min-h-screen bg-gradient-to-br from-yellow-400 via-red-500 to-red-600 p-6 flex items-center justify-center">
+                    <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
+                        <div class="bg-red-600 p-8 text-white text-center">
+                            <div class="text-6xl mb-4">🍔</div>
+                            <h1 class="text-3xl font-bold mb-2">Welcome Manager!</h1>
+                            <p class="text-lg opacity-90">Roberts Management Food Safety</p>
+                        </div>
+                        <div class="p-8">
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-bold mb-2">Your Name</label>
+                                <input type="text" id="nameInput" placeholder="Enter your full name" 
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none text-lg">
+                            </div>
+                            <div class="mb-8">
+                                <label class="block text-gray-700 font-bold mb-2">Your Location</label>
+                                <select id="locationSelect" class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none text-lg">
+                                    <option value="">Select your restaurant</option>
+                                    ${LOCATIONS.map(loc => `<option value="${loc}">${loc}</option>`).join('')}
+                                </select>
+                            </div>
+                            <button onclick="handleLogin()" class="w-full py-4 rounded-xl font-bold text-xl bg-red-600 hover:bg-red-700 text-white">
+                                Start Training
+                            </button>
+                            <div class="mt-6 text-center">
+                                <button onclick="goToLeaderboard()" class="text-red-600 hover:text-red-700 font-semibold">
+                                    View Leaderboard →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderHome() {
+            return `
+                <div class="min-h-screen bg-gradient-to-br from-yellow-400 via-red-500 to-red-600 p-6">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                            <div class="bg-red-600 p-8 text-white text-center">
+                                <div class="text-6xl mb-4">🍔</div>
+                                <h1 class="text-4xl font-bold mb-2">Roberts Management Food Safety</h1>
+                                <p class="text-xl opacity-90">McDonald's Inspection Readiness</p>
+                            </div>
+                            <div class="p-8">
+                                <div class="bg-red-50 border-2 border-red-400 rounded-xl p-4 mb-6">
+                                    <h3 class="font-bold text-red-800 mb-1">⚠️ Critical Questions = Automatic Failure</h3>
+                                    <p class="text-red-700 text-sm">Missing even ONE critical question in a real inspection means you FAIL.</p>
+                                </div>
+                                <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6 mb-8">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                            ${state.user.avatar}
+                                        </div>
+                                        <div>
+                                            <h2 class="text-2xl font-bold text-gray-800">${state.user.name}</h2>
+                                            <p class="text-gray-600">${state.user.location}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <button onclick="startQuiz()" class="w-full bg-red-600 hover:bg-red-700 text-white text-xl font-bold py-6 rounded-xl shadow-lg">
+                                        Start Daily Quiz (13 Questions)
+                                    </button>
+                                    <button onclick="goToLeaderboard()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white text-xl font-bold py-6 rounded-xl shadow-lg">
+                                        View Leaderboard
+                                    </button>
+                                    <button onclick="changeManager()" class="w-full bg-gray-500 hover:bg-gray-600 text-white text-lg font-bold py-4 rounded-xl shadow-lg">
+                                        Change Manager
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderQuiz() {
+            const q = state.quiz[state.current];
+            const colors = state.showExplain ? 
+                q.options.map((_, i) => i === q.correct ? 'bg-green-100 border-green-500' : 
+                                        i === state.selected && i !== q.correct ? 'bg-red-100 border-red-500' : 'bg-gray-50 border-gray-300') :
+                q.options.map((_, i) => i === state.selected ? 'bg-blue-100 border-blue-500' : 'bg-gray-50 border-gray-300');
+            
+            return `
+                <div class="min-h-screen bg-gradient-to-br from-blue-400 to-blue-600 p-6">
+                    <div class="max-w-3xl mx-auto">
+                        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                            <div class="bg-blue-600 p-6 text-white">
+                                <div class="flex justify-between items-center mb-4">
+                                    <span>Question ${state.current + 1} of ${state.quiz.length}</span>
+                                    <span class="font-bold">⭐ ${state.score} pts</span>
+                                </div>
+                                <div class="w-full bg-blue-800 rounded-full h-2">
+                                    <div class="bg-yellow-400 h-2 rounded-full" style="width:${((state.current + 1) / state.quiz.length) * 100}%"></div>
+                                </div>
+                            </div>
+                            <div class="p-8">
+                                ${q.critical ? `<div class="mb-4 bg-red-50 border-2 border-red-400 rounded-lg p-3">
+                                    <span class="text-red-800 font-bold text-sm">⚠️ CRITICAL QUESTION - Automatic failure if wrong</span>
+                                </div>` : ''}
+                                <div class="mb-6">
+                                    <span class="inline-block ${q.critical ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'} px-3 py-1 rounded-full text-sm font-semibold mb-3">${q.category}</span>
+                                    <h2 class="text-2xl font-bold text-gray-800">${q.question}</h2>
+                                </div>
+                                <div class="space-y-3 mb-6">
+                                    ${q.options.map((opt, i) => `
+                                        <button onclick="selectAnswer(${i})" ${state.showExplain ? 'disabled' : ''} 
+                                            class="w-full text-left p-4 rounded-xl border-2 ${colors[i]} transition-all">
+                                            <div class="flex justify-between items-center">
+                                                <span class="font-medium">${opt}</span>
+                                                ${state.showExplain && i === q.correct ? '✓' : ''}
+                                                ${state.showExplain && i === state.selected && i !== q.correct ? '✗' : ''}
+                                            </div>
+                                        </button>
+                                    `).join('')}
+                                </div>
+                                ${state.showExplain ? `<div class="${q.critical ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-300'} border-2 rounded-xl p-4 mb-6">
+                                    <h3 class="font-bold ${q.critical ? 'text-red-900' : 'text-blue-900'} mb-2">Explanation:</h3>
+                                    <p class="${q.critical ? 'text-red-800' : 'text-blue-800'}">${q.explanation}</p>
+                                </div>` : ''}
+                                <button onclick="${state.showExplain ? 'nextQuestion()' : 'submitAnswer()'}" 
+                                    ${!state.showExplain && state.selected === null ? 'disabled' : ''}
+                                    class="w-full py-4 rounded-xl font-bold text-lg ${!state.showExplain && state.selected === null ? 'bg-gray-300 text-gray-500' : state.showExplain ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-600 hover:bg-red-700 text-white'}">
+                                    ${state.showExplain ? (state.current < state.quiz.length - 1 ? 'Next Question' : 'View Results') : 'Submit Answer'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderResults() {
+            const pct = (state.score / (state.quiz.length * 10)) * 100;
+            const crit = state.answers.filter(a => a.critical);
+            const critCorrect = crit.filter(a => a.correct).length;
+            const critMissed = crit.filter(a => !a.correct);
+            
+            return `
+                <div class="min-h-screen bg-gradient-to-br from-purple-400 to-purple-600 p-6">
+                    <div class="max-w-3xl mx-auto">
+                        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                            <div class="bg-purple-600 p-8 text-white text-center">
+                                <div class="text-6xl mb-4">${critMissed.length === 0 ? '🎉' : '⚠️'}</div>
+                                <h1 class="text-4xl font-bold mb-2">Quiz Complete!</h1>
+                            </div>
+                            <div class="p-8">
+                                ${critMissed.length > 0 ? `<div class="bg-red-100 border-2 border-red-400 rounded-xl p-6 mb-6">
+                                    <h2 class="text-2xl font-bold text-red-800 mb-2">⚠️ INSPECTION FAILURE</h2>
+                                    <p class="text-red-700 font-semibold">You missed ${critMissed.length} CRITICAL question(s). In a real Ecosure inspection, you would automatically FAIL.</p>
+                                </div>` : ''}
+                                <div class="grid grid-cols-2 gap-4 mb-6">
+                                    <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-6 text-center">
+                                        <div class="text-5xl font-bold text-white mb-2">${state.score}</div>
+                                        <div class="text-xl text-white font-semibold">Total Points</div>
+                                        <div class="text-lg text-white opacity-90 mt-1">${pct.toFixed(0)}% Correct</div>
+                                    </div>
+                                    <div class="bg-gradient-to-r from-${critMissed.length === 0 ? 'green' : 'red'}-400 to-${critMissed.length === 0 ? 'green' : 'red'}-500 rounded-xl p-6 text-center">
+                                        <div class="text-5xl font-bold text-white mb-2">${critCorrect}/${crit.length}</div>
+                                        <div class="text-xl text-white font-semibold">Critical Questions</div>
+                                        <div class="text-lg text-white opacity-90 mt-1">${critMissed.length === 0 ? 'PASS ✓' : 'FAIL ✗'}</div>
+                                    </div>
+                                </div>
+                                <div class="bg-${critMissed.length === 0 ? 'green' : 'yellow'}-50 border-2 border-${critMissed.length === 0 ? 'green' : 'yellow'}-300 rounded-xl p-6 mb-8 text-center">
+                                    <h2 class="text-2xl font-bold mb-2 text-${critMissed.length === 0 ? 'green' : 'orange'}-600">
+                                        ${critMissed.length === 0 && pct >= 80 ? 'Excellent! You passed!' : critMissed.length === 0 ? 'Good! Critical passed, but review missed questions.' : 'CRITICAL FAILURE - Review immediately!'}
+                                    </h2>
+                                    ${pct >= 80 && critMissed.length === 0 ? '<p class="text-green-700 font-semibold mt-2">✓ Added to leaderboard!</p>' : ''}
+                                </div>
+                                <div class="space-y-3">
+                                    <button onclick="goHome()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-xl font-bold text-lg">Back to Home</button>
+                                    <button onclick="goToLeaderboard()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-4 rounded-xl font-bold text-lg">View Leaderboard</button>
+                                    <button onclick="startQuiz()" class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg">Retake Quiz</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderLeaderboard() {
+            return `
+                <div class="min-h-screen bg-gradient-to-br from-green-400 to-green-600 p-6">
+                    <div class="max-w-5xl mx-auto">
+                        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                            <div class="bg-green-600 p-8 text-white text-center">
+                                <div class="text-6xl mb-4">🏆</div>
+                                <h1 class="text-4xl font-bold mb-2">Manager Leaderboard</h1>
+                                <p class="text-xl opacity-90">Top Performers - Inspection Readiness</p>
+                            </div>
+                            <div class="p-8">
+                                ${state.leaderboard.length === 0 ? `
+                                    <div class="text-center py-12">
+                                        <div class="text-6xl mb-4">🎯</div>
+                                        <p class="text-gray-600 text-lg font-semibold">No managers on leaderboard yet!</p>
+                                        <p class="text-gray-500 mt-2">Complete a quiz with 80% or higher to appear here.</p>
+                                    </div>
+                                ` : `
+                                    <div class="space-y-3">
+                                        ${state.leaderboard.map((m, i) => `
+                                            <div class="bg-white rounded-lg p-4 flex items-center justify-between">
+                                                <div class="flex items-center gap-4">
+                                                    <div class="text-2xl font-bold ${i < 3 ? 'text-yellow-600' : 'text-gray-400'} w-8">#${i+1}</div>
+                                                    <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">${m.avatar}</div>
+                                                    <div>
+                                                        <div class="font-bold">${m.name}</div>
+                                                        <div class="text-sm text-gray-600">${m.location}</div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center gap-6">
+                                                    <div class="text-right">
+                                                        <div class="text-2xl font-bold text-red-600">${m.score}</div>
+                                                        <div class="text-xs text-gray-500">points</div>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <div class="text-lg font-bold text-green-600">${m.criticalMastery}%</div>
+                                                        <div class="text-xs text-gray-500">critical</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                `}
+                                <button onclick="${state.user ? 'goHome()' : 'changeManager()'}" class="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg">
+                                    ${state.user ? 'Back to Home' : 'Take Quiz'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function handleLogin() {
+            const name = document.getElementById('nameInput').value.trim();
+            const location = document.getElementById('locationSelect').value;
+            if (name && location) {
+                const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+                state.user = {name, location, avatar: initials};
+                state.screen = 'home';
+                render();
+            }
+        }
+        
+        function startQuiz() {
+            const critical = questions.filter(q => q.critical);
+            const nonCritical = questions.filter(q => !q.critical);
+            const selected = [...critical, ...nonCritical.sort(() => Math.random() - 0.5).slice(0, 5)].sort(() => Math.random() - 0.5);
+            state.quiz = selected;
+            state.current = 0;
+            state.score = 0;
+            state.selected = null;
+            state.showExplain = false;
+            state.answers = [];
+            state.screen = 'quiz';
+            render();
+        }
+        
+        function selectAnswer(i) {
+            if (!state.showExplain) {
+                state.selected = i;
+                render();
+            }
+        }
+        
+        function submitAnswer() {
+            const q = state.quiz[state.current];
+            const correct = state.selected === q.correct;
+            state.answers.push({correct, critical: q.critical});
+            if (correct) state.score += 10;
+            state.showExplain = true;
+            render();
+        }
+        
+        async function nextQuestion() {
+            if (state.current < state.quiz.length - 1) {
+                state.current++;
+                state.selected = null;
+                state.showExplain = false;
+                render();
+            } else {
+                const crit = state.answers.filter(a => a.critical);
+                const critCorrect = crit.filter(a => a.correct).length;
+                const critMastery = crit.length > 0 ? Math.round((critCorrect / crit.length) * 100) : 0;
+                const p
